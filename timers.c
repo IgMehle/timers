@@ -27,7 +27,7 @@ void timers_init(timer_t *my_timers, uint8_t n)
     if (n < MAX_N_TIMERS) n_timers = n;
 	else n_timers = MAX_N_TIMERS;
 
-#if USE_QUEUES = 1
+#if USE_QUEUES == 1
     // inicializo timers queues
     for (uint8_t p = 0; p < N_PRIORITIES; p++) {
         timers_queues[p].head = 0;
@@ -46,7 +46,7 @@ uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority)
 		timers[timers_count].id =       timers_count;
         timers[timers_count].priority = priority;
 		timers[timers_count].enabled =  0;
-#if USE_QUEUES == 1
+#if USE_QUEUES == 0
         timers[timers_count].event =    0;
 #endif
 		timers[timers_count].rep =      TIMER_PERIODIC;
@@ -124,7 +124,7 @@ timer_t get_timer_status(uint8_t id)
     tmr.priority =  timers[id].priority;
     tmr.enabled =   timers[id].enabled;
     tmr.rep =       timers[id].rep;
-#if USE_QUEUES == 1
+#if USE_QUEUES == 0
     tmr.event =     timers[id].event;
 #endif
     tmr.time =      timers[id].time;
@@ -174,7 +174,7 @@ void timers_tick(void)
 uint8_t push_timers_queue(uint8_t id)
 {
     // puntero a queue segun prioridad del timer
-    timers_queue_t *q = &queues[timers[id].priority];
+    timers_queue_t *q = &timers_queues[timers[id].priority];
     // calculo la posicion del nuevo head
     uint8_t next_head = (q->head + 1) & QUEUE_MASK;
     // si next apunta al tail, la cola esta llena
@@ -192,7 +192,7 @@ uint8_t push_timers_queue(uint8_t id)
 uint8_t pop_timers_queue(uint8_t priority, uint8_t *id)
 {
     // puntero a queue segun prioridad del timer
-    timers_queue_t *q = &queues[priority];
+    timers_queue_t *q = &timers_queues[priority];
     // si head == tail, la cola esta vacia
     if (q->head == q->tail) return QUEUE_NACK;
     // leo el numero de timer de la cola
@@ -223,7 +223,7 @@ void timers_process(uint8_t priority)
     // vacio la queue de timers de la prioridad especifica
     while (pop_timers_queue(priority, &id)) {
         // llamo al callback
-        callback_status = timers[i].callback();
+        callback_status = timers[id].callback();
     }
 #endif
 }
