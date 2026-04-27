@@ -8,15 +8,15 @@
 #include <core_cm33.h>
 
 /* ====== SECCION CRITICA ====== */
-#define TIMERS_CRITICAL_ENTER()     __disable_irq()
-#define TIMERS_CRITICAL_EXIT()      __enable_irq()
+#define TIMERS_CRITICAL_ENTER()         __disable_irq()
+#define TIMERS_CRITICAL_EXIT()          __enable_irq()
 
 /* ====== DEFERRED ISR ====== */
-#define TIMERS_USE_DEFERRED_ISR     (1)
+#define TIMERS_USE_DEFERRED_ISR         (1)
 
 #if TIMERS_USE_DEFERRED_ISR
-#define TIMERS_TRIGGER_DEFERRED()   (SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk)
+    #define TIMERS_TRIGGER_DEFERRED()   (SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk)
 #endif
 
 /* ====== OPTIMIZACIONES ====== */
-#define TIMERS_ATOMIC_32            (1)
+#define TIMERS_ATOMIC_32                (1)

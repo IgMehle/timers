@@ -216,7 +216,15 @@ uint8_t pop_timers_queue(uint8_t priority, uint8_t *id)
 void timers_process(uint8_t priority)
 {
     uint8_t callback_status = CALLBACK_OK;
-#if USE_QUEUES == 0
+
+#if USE_QUEUES
+    uint8_t id;
+    // vacio la queue de timers de la prioridad especifica
+    while (pop_timers_queue(priority, &id)) {
+        // llamo al callback
+        callback_status = timers[id].callback();
+    }
+#else
     // itero por todos los timers creados
 	for (uint8_t i = 0; i < timers_count; i++) {
         // si el flag de event esta habilitado
@@ -227,14 +235,6 @@ void timers_process(uint8_t priority)
             // limpio flag de event
             timers[i].event = 0;
         }
-    }
-#endif
-#if USE_QUEUES == 1
-    uint8_t id;
-    // vacio la queue de timers de la prioridad especifica
-    while (pop_timers_queue(priority, &id)) {
-        // llamo al callback
-        callback_status = timers[id].callback();
     }
 #endif
 }

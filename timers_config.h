@@ -30,14 +30,14 @@
 /* ----------------------------------------------- */
 /* ===== TAGS DE PRIORIDADES ===== */
 #if N_PRIORITIES == 2
-#define TIMER_HIGH_PRIORITY 0U
-#define TIMER_LOW_PRIORITY  1U
+    #define TIMER_HIGH_PRIORITY 0U
+    #define TIMER_LOW_PRIORITY  1U
 #endif
 
 #if N_PRIORITIES == 3
-#define TIMER_HIGH_PRIORITY 0U
-#define TIMER_MID_PRIORITY  1U
-#define TIMER_LOW_PRIORITY  2U
+    #define TIMER_HIGH_PRIORITY 0U
+    #define TIMER_MID_PRIORITY  1U
+    #define TIMER_LOW_PRIORITY  2U
 #endif
 /* ----------------------------------------------- */
 

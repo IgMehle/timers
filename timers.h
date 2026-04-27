@@ -8,6 +8,7 @@
 #ifndef TIMERS_H_
 #define TIMERS_H_
 
+/* ===== STDINT.H ===== */
 #include <stdint.h>
 
 /* ===== TIMER_T ===== */
