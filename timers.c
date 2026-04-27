@@ -149,37 +149,37 @@ timer_t get_timer_status(uint8_t id)
 void timers_tick(void)
 {
 	// itero por todos los timers creados
-	for (uint8_t id = 0; id < timers_count; id++) {
+	for (uint8_t i = 0; i < timers_count; i++) {
 		// si el timer esta habilitado
-		if (timers[id].enabled) {
+		if (timers[i].enabled) {
 			// si vencio el contador
-			if (timers[id].ticks == 0) {
+			if (timers[i].ticks == 0) {
 #if USE_QUEUES
                 // encolo timer
-                push_timers_queue(id, timers[id].priority);
+                push_timers_queue(i, timers[i].priority);
 #else
                 // levanto el flag de event
-				timers[id].event = 1;
+				timers[i].event = 1;
 #endif
 
 #if TIMER_CRITICAL_ENABLED
                 uint8_t callback_status = CALLBACK_OK;
-                callback_status = timers[id].callback();
+                callback_status = timers[i].callback();
 #endif
 				// si el timer es PERIODICO, solo recargo el contador
-				if (timers[id].rep == TIMER_PERIODIC) {
-                    timers[id].ticks = timers[id].reload;
+				if (timers[i].rep == TIMER_PERIODIC) {
+                    timers[i].ticks = timers[i].reload;
                 }
 				// si NO ES PERIODICO, decremento repeticiones
 				else {
-                    if (timers[id].rep != 0) timers[id].rep--;
+                    if (timers[i].rep != 0) timers[i].rep--;
                     // si se acabaron las repeticiones, lo deshabilito
-                    if (timers[id].rep == 0) timers[id].enabled = 0;
+                    if (timers[i].rep == 0) timers[i].enabled = 0;
                 }
 			}
 			// si el contador no esta en cero, decremento
 			else {
-				timers[id].ticks--;
+				timers[i].ticks--;
 			}
 		}
 	}
@@ -229,14 +229,14 @@ void timers_process(uint8_t priority)
     }
 #else
     // itero por todos los timers creados
-	for (uint8_t id = 0; id < timers_count; id++) {
+	for (uint8_t i = 0; i < timers_count; i++) {
         // si el flag de event esta habilitado
         // y el timer tiene la prioridad especificada
-        if (timers[id].event && timers[id].priority == priority) {
+        if (timers[i].event && timers[i].priority == priority) {
             // llamo al callback
-            callback_status = timers[id].callback();
+            callback_status = timers[i].callback();
             // limpio flag de event
-            timers[id].event = 0;
+            timers[i].event = 0;
         }
     }
 #endif
