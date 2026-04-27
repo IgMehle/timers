@@ -1,0 +1,84 @@
+timer_t version 16 bits
+
+typedef struct
+{
+    uint16_t ticks;        // contador actual
+    uint16_t reload;       // valor de recarga
+
+    void (*callback)(void);
+
+    uint8_t flags;         // bitfield manual
+
+} timer_t;
+
+typedef struct
+{
+    uint16_t ticks;
+    uint16_t reload;
+
+    void (*callback)(void);
+
+    uint8_t flags;
+
+} timer_t;
+
+con flags
+
+#define TIMER_FLAG_ACTIVE     (1 << 0)
+#define TIMER_FLAG_PERIODIC   (1 << 1)
+
+timer_t version 8 bits
+
+typedef struct
+{
+    uint8_t ticks;
+    uint8_t reload;
+
+    void (*callback)(void);
+
+    uint8_t flags;
+
+} timer_t;
+
+typedef configurable
+
+#ifndef TIMERS_TICK_TYPE
+#define TIMERS_TICK_TYPE uint16_t
+#endif
+
+typedef struct
+{
+    TIMERS_TICK_TYPE ticks;
+    TIMERS_TICK_TYPE reload;
+
+    void (*callback)(void);
+
+    uint8_t flags;
+
+} timer_t;
+
+optimizacion del callback
+
+typedef void (*timer_cb_t)(uint8_t id);
+
+en la struct
+uint8_t id;
+
+tabla global
+void (*callbacks[])(uint8_t);
+
+layout equilibrado:
+typedef struct
+{
+    TIMERS_TICK_TYPE ticks;
+    TIMERS_TICK_TYPE reload;
+
+#if TIMERS_USE_CALLBACKS
+    void (*callback)(void);
+#else
+    uint8_t id;
+#endif
+
+    uint8_t flags;
+
+} timer_t;

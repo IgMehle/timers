@@ -1,0 +1,16 @@
+FALLBACK AUTOMATICO EN PORT_SELECT
+
+#ifndef TIMERS_CORE
+
+    #if defined(__ARM_ARCH)
+        #define TIMERS_CORE TIMERS_CORE_CORTEX_M
+
+    #elif defined(__AVR__)
+        #define TIMERS_CORE TIMERS_CORE_AVR
+
+    #elif defined(__MSP430__)
+        #define TIMERS_CORE TIMERS_CORE_MSP430
+
+    #endif
+
+#endif

@@ -10,6 +10,7 @@
  * -----------------------------------------------------*/
 #include "timers.h"
 #include "timers_config.h"
+#include "timers_port_select.h"
 
 /* -----------------------------------------------------
  * GLOBAL VARIABLES

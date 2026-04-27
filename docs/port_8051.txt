@@ -1,0 +1,126 @@
+#ifndef TIMERS_PORT_8051_H
+#define TIMERS_PORT_8051_H
+
+/* =========================================================
+ *  DETECCION DE COMPILADOR
+ * ========================================================= */
+
+#if defined(__SDCC)
+    #define TIMERS_COMPILER_SDCC 1
+#elif defined(__C51__) || defined(__CX51__) || defined(__KEIL__)
+    #define TIMERS_COMPILER_KEIL 1
+#else
+    #warning "Unknown 8051 compiler - assuming generic behavior"
+#endif
+
+/* =========================================================
+ *  CRITICAL SECTION (GLOBAL IRQ)
+ * ========================================================= */
+
+// EA = bit de enable global de interrupciones
+
+#define TIMERS_CRITICAL_ENTER() do { EA = 0; } while(0)
+#define TIMERS_CRITICAL_EXIT()  do { EA = 1; } while(0)
+
+/* =========================================================
+ *  ATOMICIDAD
+ * ========================================================= */
+
+#define TIMERS_ATOMIC_8   1
+#define TIMERS_ATOMIC_16  0
+#define TIMERS_ATOMIC_32  0
+
+/* =========================================================
+ *  DEFERRED ISR (NO EXISTE EN 8051)
+ * ========================================================= */
+
+#define TIMERS_USE_DEFERRED_ISR 0
+#define TIMERS_TRIGGER_DEFERRED() do {} while(0)
+
+/* =========================================================
+ *  MODELO DE MEMORIA
+ * ========================================================= */
+
+// Default: usar xdata (más espacio)
+// Se puede overridear desde timers_config.h
+
+#ifndef TIMERS_MEM
+
+    #if defined(TIMERS_COMPILER_SDCC)
+
+        // SDCC usa __xdata
+        #define TIMERS_MEM __xdata
+
+    #elif defined(TIMERS_COMPILER_KEIL)
+
+        // Keil usa xdata
+        #define TIMERS_MEM xdata
+
+    #else
+
+        // fallback (puede fallar si el compilador es raro)
+        #define TIMERS_MEM
+
+    #endif
+
+#endif
+
+/* =========================================================
+ *  TIPOS OPTIMIZADOS
+ * ========================================================= */
+
+// Podés usarlos en tu core si querés afinar memoria
+
+typedef unsigned char  timers_u8_t;
+typedef unsigned int   timers_u16_t;
+typedef unsigned long  timers_u32_t;
+
+/* =========================================================
+ *  BARRERAS (NOP opcional)
+ * ========================================================= */
+
+#if defined(TIMERS_COMPILER_SDCC)
+    #define TIMERS_NOP() __asm nop __endasm
+#elif defined(TIMERS_COMPILER_KEIL)
+    #define TIMERS_NOP() _nop_()
+#else
+    #define TIMERS_NOP() do {} while(0)
+#endif
+
+/* =========================================================
+ *  HELPERS ATOMICOS (OPCIONAL)
+ * ========================================================= */
+
+// Para leer 16 bits sin romperte
+
+#define TIMERS_ATOMIC_READ_16(dst, src) \
+    do {                                \
+        TIMERS_CRITICAL_ENTER();        \
+        (dst) = (src);                  \
+        TIMERS_CRITICAL_EXIT();         \
+    } while(0)
+
+#define TIMERS_ATOMIC_READ_32(dst, src) \
+    do {                                \
+        TIMERS_CRITICAL_ENTER();        \
+        (dst) = (src);                  \
+        TIMERS_CRITICAL_EXIT();         \
+    } while(0)
+
+/* =========================================================
+ *  NOTAS DE USO
+ * ========================================================= */
+
+/*
+ * - La ISR del timer la implementa el usuario
+ * - Debe llamar a:
+ *
+ *      timers_tick();
+ *
+ * - Recomendado:
+ *      - Usar pocos timers
+ *      - Evitar structs grandes
+ *      - Preferir TIMERS_MEM para arrays grandes
+ */
+
+#endif /* TIMERS_PORT_8051_H */
