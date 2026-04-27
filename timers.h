@@ -8,12 +8,12 @@
 #ifndef TIMERS_H_
 #define TIMERS_H_
 
-/* ===== STDINT.H ===== */
+/* ===== INCLUDES ===== */
 #include <stdint.h>
+#include "timers_config.h"
 
 /* ===== TIMER_T ===== */
 typedef struct timer {
-	uint8_t             id;
     uint8_t             priority;
 	volatile uint8_t    enabled;
 #if USE_QUEUES == 0
@@ -46,7 +46,7 @@ typedef struct timers_queue {
 #define QUEUE_NACK      0U
 #define QUEUE_ACK       1U
 
-/* ===== INIT/CONFIG ===== */
+/* ===== INIT / CONFIG ===== */
 void timers_init(timer_t *my_timers, uint8_t n);
 uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority);
 

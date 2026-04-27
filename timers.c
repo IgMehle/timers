@@ -9,7 +9,6 @@
  * HEADERS
  * -----------------------------------------------------*/
 #include "timers.h"
-#include "timers_config.h"
 #include "timers_port_select.h"
 
 /* -----------------------------------------------------
@@ -48,18 +47,17 @@ uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority)
 	if (timers_count < n_timers) {
 		// Lleno los campos del nuevo timer
 		// Inicia apagado
-		timers[timers_count].id =       timers_count;
-        timers[timers_count].priority = priority;
 		timers[timers_count].enabled =  0;
+		timers[timers_count].priority = priority;
 		timers[timers_count].rep =      TIMER_PERIODIC;
-        timers[timers_count].callback = callback;
 		timers[timers_count].reload =   reload;
 		timers[timers_count].ticks =    reload;
+		timers[timers_count].callback = callback;
 #if USE_QUEUES == 0
         timers[timers_count].event =    0;
 #endif
 		// Devuelvo el numero de timer
-		n_timer = timers[timers_count].id;
+		n_timer = timers_count;
 		// Incremento la cantidad de timers creados
 		timers_count++;
 	}
@@ -69,7 +67,6 @@ uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority)
 /* -----------------------------------------------------
  * TIMER MANIPULATION
  * -----------------------------------------------------*/
-
 void on_timer(uint8_t id, uint8_t rep)
 {
 	timers[id].ticks = timers[id].reload;
@@ -129,7 +126,6 @@ void off_timer(uint8_t id)
 timer_t get_timer_status(uint8_t id)
 {
     timer_t tmr;
-    tmr.id =        timers[id].id;
     tmr.priority =  timers[id].priority;
     tmr.enabled =   timers[id].enabled;
     tmr.rep =       timers[id].rep;
@@ -145,7 +141,6 @@ timer_t get_timer_status(uint8_t id)
 /* -----------------------------------------------------
  * TIMERS CORE
  * -----------------------------------------------------*/
-
 void timers_tick(void)
 {
 	// itero por todos los timers creados
