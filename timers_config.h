@@ -13,6 +13,7 @@
 
 // Usar queues o marcado de eventos
 #define USE_QUEUES              1U
+
 // Largo de queue de timers (potencia de 2)
 #define QUEUE_SIZE              64U
 #define QUEUE_MASK              (QUEUE_SIZE - 1)
@@ -22,19 +23,12 @@
 
 // Prioridad maxima de soft timer (dentro de ISR)
 #define TIMER_CRITICAL          0xFF
+
 // Habilitacion de callbacks en ISR
 #define TIMER_CRITICAL_ENABLED  0U
 
-// CORTEX M
-// Habilitacion de PendSV Handler
-#define PENDSV_ENABLED          0U
-#if PENDSV_ENABLED == 1
-#define PENDSV_TRIGGER()  SCB->ICSR |= SCB_ICSR_PENDSVSET_Msk
-#endif
-
-//----------------------------------------//
-//----- labels: niveles de prioridad -----//
-//----------------------------------------//
+/* ----------------------------------------------- */
+/* ===== TAGS DE PRIORIDADES ===== */
 #if N_PRIORITIES == 2
 #define TIMER_HIGH_PRIORITY 0U
 #define TIMER_LOW_PRIORITY  1U
@@ -45,6 +39,6 @@
 #define TIMER_MID_PRIORITY  1U
 #define TIMER_LOW_PRIORITY  2U
 #endif
-//---------------------------------------------//
+/* ----------------------------------------------- */
 
 #endif /* TIMERS_H_ */

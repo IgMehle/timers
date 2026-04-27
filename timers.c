@@ -5,6 +5,9 @@
  *      Author: Ignacio Mehle
  */
 
+ /* -----------------------------------------------------
+ * HEADERS
+ * -----------------------------------------------------*/
 #include "timers.h"
 #include "timers_config.h"
 
@@ -19,7 +22,7 @@ static timers_queue_t timers_queues[N_PRIORITIES];
 #endif
 
 /* -----------------------------------------------------
- * FUNCTIONS
+ * INIT / CONFIG
  * -----------------------------------------------------*/
 void timers_init(timer_t *my_timers, uint8_t n)
 {
@@ -60,6 +63,10 @@ uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority)
 	}
 	return n_timer;
 }
+
+/* -----------------------------------------------------
+ * TIMER MANIPULATION
+ * -----------------------------------------------------*/
 
 void on_timer(uint8_t id, uint8_t rep)
 {
@@ -132,6 +139,10 @@ timer_t get_timer_status(uint8_t id)
     tmr.callback =  timers[id].callback;
     return tmr;
 }
+
+/* -----------------------------------------------------
+ * TIMERS CORE
+ * -----------------------------------------------------*/
 
 void timers_tick(void)
 {
@@ -227,3 +238,4 @@ void timers_process(uint8_t priority)
     }
 #endif
 }
+/* ----------------------------------------------------- */
