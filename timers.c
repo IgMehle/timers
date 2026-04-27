@@ -1,4 +1,4 @@
-/*
+/**
  * timers.c
  *
  *  Created on: 1 feb. 2026
@@ -9,7 +9,6 @@
  * HEADERS
  * -----------------------------------------------------*/
 #include "timers.h"
-#include "timers_port_select.h"
 
 /* -----------------------------------------------------
  * GLOBAL VARIABLES
@@ -218,7 +217,7 @@ void timers_process(uint8_t priority)
 #if USE_QUEUES
     uint8_t id;
     // vacio la queue de timers de la prioridad especifica
-    while (pop_timers_queue(priority, &id)) {
+    while (pop_timers_queue(&id, priority)) {
         // llamo al callback
         callback_status = timers[id].callback();
     }

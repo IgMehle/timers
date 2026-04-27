@@ -22,7 +22,10 @@
     #include "port/avr32.h"
 
 #elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M0)
-    #include "port/cortex_m0.h"
+    #include "port/arm_cm0.h"
+
+#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M0P)
+    #include "port/arm_cm0plus.h"
 
 #elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M3)
     #include "port/cortex_m3.h"

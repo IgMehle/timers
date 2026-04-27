@@ -1,11 +1,16 @@
-/*
+/**
  * cortex_m0.h
  *
  *  Created on: 26 apr. 2026
  *      Author: Ignacio Mehle
  */
 
-#include <core_cm0.h>
+#include "../timers_config.h"
+
+/* ====== DEVICE HEADER ====== */
+#include DEVICE_HEADER
+/* ====== CORE HEADER ====== */
+#include PLATFORM_CORE_HEADER
 
 /* ====== SECCION CRITICA ====== */
 #define TIMERS_CRITICAL_ENTER()         __disable_irq()

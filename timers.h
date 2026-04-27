@@ -1,4 +1,4 @@
-/*
+/**
  * timers.h
  *
  *  Created on: 1 feb. 2026
@@ -10,7 +10,9 @@
 
 /* ===== INCLUDES ===== */
 #include <stdint.h>
+#include <stdio.h>
 #include "timers_config.h"
+#include "timers_port_select.h"
 
 /* ===== TIMER_T ===== */
 typedef struct timer {
@@ -40,6 +42,7 @@ typedef struct timers_queue {
 /* ===== DEFINICIONES ===== */
 #define EVENT_PENDING   1U
 #define EVENT_CLEAR     0U
+#define MAX_PRIORITIES  8U
 #define TIMER_PERIODIC	0xFF
 #define TIMER_MAX_REP   0xFE
 #define CALLBACK_OK     0U

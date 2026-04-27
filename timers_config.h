@@ -1,4 +1,4 @@
-/*
+/**
  * timers_config.h
  *
  *  Created on: 25 apr. 2026
@@ -8,6 +8,9 @@
 #ifndef TIMERS_CONFIG_H_
 #define TIMERS_CONFIG_H_
 
+#define DEVICE_HEADER           "LPC845.h"
+#define PLATFORM_CORE_HEADER    "core_cm0plus.h"
+
 // Cantidad maxima de timers
 #define MAX_N_TIMERS            16U
 
@@ -15,7 +18,7 @@
 #define USE_QUEUES              1U
 
 // Largo de queue de timers (potencia de 2)
-#define QUEUE_SIZE              64U
+#define QUEUE_SIZE              16U
 #define QUEUE_MASK              (QUEUE_SIZE - 1)
 
 // Cantidad de niveles de prioridad
@@ -36,26 +39,15 @@
 #define TIMERS_CORE_COLDFIRE_V2 5
 #define TIMERS_CORE_AVR32       6
 #define TIMERS_CORE_CORTEX_M0   7
-#define TIMERS_CORE_CORTEX_M3   8
-#define TIMERS_CORE_CORTEX_M4   9
-#define TIMERS_CORE_CORTEX_M33  10
-#define TIMERS_CORE_RISCV       11
+#define TIMERS_CORE_CORTEX_M0P  8
+#define TIMERS_CORE_CORTEX_M3   9
+#define TIMERS_CORE_CORTEX_M4   10
+#define TIMERS_CORE_CORTEX_M33  11
+#define TIMERS_CORE_RISCV       12
 
 /* ===== ARQUITECTURA ===== */
 #define TIMERS_CORE             TIMERS_CORE_CORTEX_M0
 
-/* ----------------------------------------------- */
-/* ===== TAGS DE PRIORIDADES ===== */
-#if N_PRIORITIES == 2
-    #define TIMER_HIGH_PRIORITY 0U
-    #define TIMER_LOW_PRIORITY  1U
-#endif
-
-#if N_PRIORITIES == 3
-    #define TIMER_HIGH_PRIORITY 0U
-    #define TIMER_MID_PRIORITY  1U
-    #define TIMER_LOW_PRIORITY  2U
-#endif
 /* ----------------------------------------------- */
 
 #ifndef TIMER_CRITICAL_ENABLED
