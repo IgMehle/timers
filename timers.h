@@ -13,25 +13,25 @@
 
 /* ===== TIMER_T ===== */
 typedef struct timer {
-	uint8_t id;
-    uint8_t priority;
-	volatile uint8_t enabled;
+	uint8_t             id;
+    uint8_t             priority;
+	volatile uint8_t    enabled;
 #if USE_QUEUES == 0
-	volatile uint8_t event;
+	volatile uint8_t    event;
 #endif
-    volatile uint8_t rep;
-	uint8_t (*callback)(void);
-    uint32_t time;
-	volatile uint32_t count;
+    volatile uint8_t    rep;
+	uint8_t             (*callback)(void);
+    uint32_t            reload;
+	volatile uint32_t   ticks;
 } timer_t;
 
 /* ===== TIMERS_QUEUE_T ===== */
 typedef struct timers_queue {
-    volatile uint8_t bf[QUEUE_SIZE];
+    volatile uint8_t    bf[QUEUE_SIZE];
     // escribe la ISR (timers_tick)
-    volatile uint8_t head;
+    volatile uint8_t    head;
     // lee el consumidor (timers_process)
-    volatile uint8_t tail;
+    volatile uint8_t    tail;
     // flags
     // volatile uint8_t empty;
     // volatile uint8_t full;
@@ -48,13 +48,13 @@ typedef struct timers_queue {
 
 /* ===== INIT/CONFIG ===== */
 void timers_init(timer_t *my_timers, uint8_t n);
-uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority);
+uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority);
 
 /* ===== TIMER MANIPULATION ===== */
 void on_timer(uint8_t id, uint8_t rep);
 void pause_timer(uint8_t id);
 void continue_timer(uint8_t id);
-void reset_timer(uint8_t id);
+void reload_timer(uint8_t id);
 void set_timer_priority(uint8_t id, uint8_t priority);
 void set_timer_repeats(uint8_t id, uint8_t rep);
 void add_timer_repeats(uint8_t id, uint8_t rep);
@@ -64,8 +64,8 @@ timer_t get_timer_status(uint8_t id);
 
 /* ===== TIMERS CORE ===== */
 void timers_tick(void);
-uint8_t push_timers_queue(uint8_t id);
-uint8_t pop_timers_queue(uint8_t priority, uint8_t *id);
+uint8_t push_timers_queue(uint8_t id, uint8_t priority);
+uint8_t pop_timers_queue(uint8_t *id, uint8_t priority);
 void timers_process(uint8_t priority);
 
 #endif /* TIMERS_H_ */

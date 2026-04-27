@@ -18,7 +18,8 @@
 static timer_t *timers = NULL;
 static uint8_t n_timers = 0;
 static uint8_t timers_count = 0;
-#if USE_QUEUES == 1
+
+#if USE_QUEUES
 static timers_queue_t timers_queues[N_PRIORITIES];
 #endif
 
@@ -31,7 +32,7 @@ void timers_init(timer_t *my_timers, uint8_t n)
     if (n < MAX_N_TIMERS) n_timers = n;
 	else n_timers = MAX_N_TIMERS;
 
-#if USE_QUEUES == 1
+#if USE_QUEUES
     // inicializo timers queues
     for (uint8_t p = 0; p < N_PRIORITIES; p++) {
         timers_queues[p].head = 0;
@@ -40,7 +41,7 @@ void timers_init(timer_t *my_timers, uint8_t n)
 #endif
 }
 
-uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority)
+uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority)
 {
 	uint8_t n_timer = 0xFF;
 	// Si no llegue al maximo de timers, agrego
@@ -50,13 +51,13 @@ uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority)
 		timers[timers_count].id =       timers_count;
         timers[timers_count].priority = priority;
 		timers[timers_count].enabled =  0;
+		timers[timers_count].rep =      TIMER_PERIODIC;
+        timers[timers_count].callback = callback;
+		timers[timers_count].reload =   reload;
+		timers[timers_count].ticks =    reload;
 #if USE_QUEUES == 0
         timers[timers_count].event =    0;
 #endif
-		timers[timers_count].rep =      TIMER_PERIODIC;
-        timers[timers_count].callback = callback;
-		timers[timers_count].time =     time;
-		timers[timers_count].counter =  time;
 		// Devuelvo el numero de timer
 		n_timer = timers[timers_count].id;
 		// Incremento la cantidad de timers creados
@@ -71,7 +72,7 @@ uint8_t give_timer(uint32_t time, uint8_t (*callback)(), uint8_t priority)
 
 void on_timer(uint8_t id, uint8_t rep)
 {
-	timers[id].counter = timers[id].time;
+	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
 	timers[id].enabled = 1;
 }
@@ -86,9 +87,9 @@ void continue_timer(uint8_t id)
 	timers[id].enabled = 1;
 }
 
-void reset_timer(uint8_t id)
+void reload_timer(uint8_t id)
 {
-	timers[id].counter = timers[id].time;
+	timers[id].ticks = timers[id].reload;
 }
 
 void set_timer_priority(uint8_t id, uint8_t priority)
@@ -113,16 +114,16 @@ void add_timer_repeats(uint8_t id, uint8_t rep)
     }
 }
 
-void resize_timer(uint8_t id, uint32_t time)
+void resize_timer(uint8_t id, uint32_t reload)
 {
-	timers[id].time = time;
-	timers[id].counter = time;
+	timers[id].reload = reload;
+	timers[id].ticks = reload;
 }
 
 void off_timer(uint8_t id)
 {
 	timers[id].enabled = 0;
-	timers[id].counter = timers[id].time;
+	timers[id].ticks = timers[id].reload;
 }
 
 timer_t get_timer_status(uint8_t id)
@@ -132,12 +133,12 @@ timer_t get_timer_status(uint8_t id)
     tmr.priority =  timers[id].priority;
     tmr.enabled =   timers[id].enabled;
     tmr.rep =       timers[id].rep;
+    tmr.reload =    timers[id].reload;
+    tmr.ticks =     timers[id].ticks;
+    tmr.callback =  timers[id].callback;
 #if USE_QUEUES == 0
     tmr.event =     timers[id].event;
 #endif
-    tmr.time =      timers[id].time;
-    tmr.counter =   timers[id].counter;
-    tmr.callback =  timers[id].callback;
     return tmr;
 }
 
@@ -147,46 +148,47 @@ timer_t get_timer_status(uint8_t id)
 
 void timers_tick(void)
 {
-	// Itero por todos los timers creados
-	for (uint8_t i = 0; i < timers_count; i++) {
-		// Si el timer esta habilitado
-		if (timers[i].enabled) {
-			// Si vencio el contador
-			if (timers[i].counter == 0) {
-#if USE_QUEUES == 0
+	// itero por todos los timers creados
+	for (uint8_t id = 0; id < timers_count; id++) {
+		// si el timer esta habilitado
+		if (timers[id].enabled) {
+			// si vencio el contador
+			if (timers[id].ticks == 0) {
+#if USE_QUEUES
+                // encolo timer
+                push_timers_queue(id, timers[id].priority);
+#else
                 // levanto el flag de event
-				timers[i].event = 1;
+				timers[id].event = 1;
 #endif
-#if USE_QUEUES == 1
-                push_timers_queue(i);
-#endif
-#if TIMER_CRITICAL_ENABLED == 1
+
+#if TIMER_CRITICAL_ENABLED
                 uint8_t callback_status = CALLBACK_OK;
-                callback_status = timers[i].callback();
+                callback_status = timers[id].callback();
 #endif
-				// si el timer es periodico, solo recargo el contador
-				if (timers[i].rep == TIMER_PERIODIC) {
-                    timers[i].counter = timers[i].time;
+				// si el timer es PERIODICO, solo recargo el contador
+				if (timers[id].rep == TIMER_PERIODIC) {
+                    timers[id].ticks = timers[id].reload;
                 }
 				// si NO ES PERIODICO, decremento repeticiones
 				else {
-                    if (timers[i].rep != 0) timers[i].rep--;
+                    if (timers[id].rep != 0) timers[id].rep--;
                     // si se acabaron las repeticiones, lo deshabilito
-                    if (timers[i].rep == 0) timers[i].enabled = 0;
+                    if (timers[id].rep == 0) timers[id].enabled = 0;
                 }
 			}
 			// si el contador no esta en cero, decremento
 			else {
-				timers[i].counter--;
+				timers[id].ticks--;
 			}
 		}
 	}
 }
 
-uint8_t push_timers_queue(uint8_t id)
+uint8_t push_timers_queue(uint8_t id, uint8_t priority)
 {
     // puntero a queue segun prioridad del timer
-    timers_queue_t *q = &timers_queues[timers[id].priority];
+    timers_queue_t *q = &timers_queues[priority];
     // calculo la posicion del nuevo head
     uint8_t next_head = (q->head + 1) & QUEUE_MASK;
     // si next apunta al tail, la cola esta llena
@@ -201,7 +203,7 @@ uint8_t push_timers_queue(uint8_t id)
     return QUEUE_ACK;
 }
 
-uint8_t pop_timers_queue(uint8_t priority, uint8_t *id)
+uint8_t pop_timers_queue(uint8_t *id, uint8_t priority)
 {
     // puntero a queue segun prioridad del timer
     timers_queue_t *q = &timers_queues[priority];
@@ -227,14 +229,14 @@ void timers_process(uint8_t priority)
     }
 #else
     // itero por todos los timers creados
-	for (uint8_t i = 0; i < timers_count; i++) {
+	for (uint8_t id = 0; id < timers_count; id++) {
         // si el flag de event esta habilitado
         // y el timer tiene la prioridad especificada
-        if (timers[i].event && timers[i].priority == priority) {
+        if (timers[id].event && timers[id].priority == priority) {
             // llamo al callback
-            callback_status = timers[i].callback();
+            callback_status = timers[id].callback();
             // limpio flag de event
-            timers[i].event = 0;
+            timers[id].event = 0;
         }
     }
 #endif
