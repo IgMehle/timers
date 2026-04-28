@@ -8,8 +8,14 @@
 #ifndef TIMERS_CONFIG_H_
 #define TIMERS_CONFIG_H_
 
-#define DEVICE_HEADER           "LPC845.h"
-#define PLATFORM_CORE_HEADER    "core_cm0plus.h"
+/* ===== ARQUITECTURA ===== */
+#include "portable/timers_arch_list.h"
+#define TIMERS_ARCH             TIMERS_ARCH_CORTEX_M0P
+
+/* ===== HEADERS ===== */
+#define TIMERS_DEVICE_HEADER    "LPC845.h"
+#define TIMERS_CORE_HEADER      "core_cm0plus.h"
+/* ----------------------------------------------- */
 
 // Cantidad maxima de timers
 #define MAX_N_TIMERS            16U
@@ -29,29 +35,10 @@
 
 // Habilitacion de callbacks en ISR
 #define TIMER_CRITICAL_ENABLED  0U
-
-/* ----------------------------------------------- */
-/* ===== CORES ===== */
-#define TIMERS_CORE_AVR         1
-#define TIMERS_CORE_PIC16       2
-#define TIMERS_CORE_PIC18       3
-#define TIMERS_CORE_MSP430      4
-#define TIMERS_CORE_COLDFIRE_V2 5
-#define TIMERS_CORE_AVR32       6
-#define TIMERS_CORE_CORTEX_M0   7
-#define TIMERS_CORE_CORTEX_M0P  8
-#define TIMERS_CORE_CORTEX_M3   9
-#define TIMERS_CORE_CORTEX_M4   10
-#define TIMERS_CORE_CORTEX_M33  11
-#define TIMERS_CORE_RISCV       12
-
-/* ===== ARQUITECTURA ===== */
-#define TIMERS_CORE             TIMERS_CORE_CORTEX_M0P
-
 /* ----------------------------------------------- */
 
 #ifndef TIMER_CRITICAL_ENABLED
 #error "Port must define TIMERS_CRITICAL_ENTER"
 #endif
 
-#endif /* TIMERS_H_ */
+#endif /* TIMERS_CONFIG_H_ */

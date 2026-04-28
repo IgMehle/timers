@@ -13,7 +13,7 @@
 /* -----------------------------------------------------
  * GLOBAL VARIABLES
  * -----------------------------------------------------*/
-static timer_t *timers = NULL;
+static timer_t *timers = 0;
 static uint8_t n_timers = 0;
 static uint8_t timers_count = 0;
 

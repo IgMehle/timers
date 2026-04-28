@@ -1,46 +1,52 @@
-#ifndef TIMERS_PORT_SELECT_H
-#define TIMERS_PORT_SELECT_H
+/**
+ * timers_port_select.h
+ *
+ *  Created on: 26 apr. 2026
+ *      Author: Ignacio Mehle
+ */
+#ifndef TIMERS_PORT_SELECT_H_
+#define TIMERS_PORT_SELECT_H_
 
-#include "timers_config.h"
+#include <timers_config.h>
 
-#if (TIMERS_CORE == TIMERS_CORE_AVR)
+#if (TIMERS_ARCH == TIMERS_ARCH_AVR)
     #include "avr.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_PIC16)
+#elif (TIMERS_ARCH == TIMERS_ARCH_PIC16)
     #include "pic16.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_PIC18)
+#elif (TIMERS_ARCH == TIMERS_ARCH_PIC18)
     #include "pic18.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_MSP430)
+#elif (TIMERS_ARCH == TIMERS_ARCH_MSP430)
     #include "msp430.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_COLDFIRE_V2)
+#elif (TIMERS_ARCH == TIMERS_ARCH_COLDFIRE_V2)
     #include "coldfire_v2.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_AVR32)
+#elif (TIMERS_ARCH == TIMERS_ARCH_AVR32)
     #include "avr32.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M0)
+#elif (TIMERS_ARCH == TIMERS_ARCH_CORTEX_M0)
     #include "arm_cm0.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M0P)
+#elif (TIMERS_ARCH == TIMERS_ARCH_CORTEX_M0P)
     #include "arm_cm0plus.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M3)
-    #include "cortex_m3.h"
+#elif (TIMERS_ARCH == TIMERS_ARCH_CORTEX_M3)
+    #include "arm_cm3.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M4)
-    #include "cortex_m4.h"
+#elif (TIMERS_ARCH == TIMERS_ARCH_CORTEX_M4)
+    #include "arm_cm4.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_CORTEX_M33)
-    #include "cortex_m33.h"
+#elif (TIMERS_ARCH == TIMERS_ARCH_CORTEX_M33)
+    #include "arm_cm33.h"
 
-#elif (TIMERS_CORE == TIMERS_CORE_RISCV)
-    #include "riscv.h"
+#elif (TIMERS_ARCH == TIMERS_ARCH_RISC_V)
+    #include "risc_v.h"
 
 #else
-    #error "TIMERS_CORE not defined or unsupported"
+    #error "TIMERS_ARCH not defined or unsupported"
 #endif
 
-#endif
+#endif /* TIMERS_PORT_SELECT_H_ */

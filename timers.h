@@ -10,7 +10,6 @@
 
 /* ===== INCLUDES ===== */
 #include <stdint.h>
-#include <stdio.h>
 #include "timers_config.h"
 #include "portable/timers_port_select.h"
 
