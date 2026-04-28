@@ -46,7 +46,7 @@
 #define TIMERS_CORE_RISCV       12
 
 /* ===== ARQUITECTURA ===== */
-#define TIMERS_CORE             TIMERS_CORE_CORTEX_M0
+#define TIMERS_CORE             TIMERS_CORE_CORTEX_M0P
 
 /* ----------------------------------------------- */
 
