@@ -1,13 +1,19 @@
-/*
- * risc_v.h
+/**
+ * avr32.h
  *
  *  Created on: 26 apr. 2026
  *      Author: Ignacio Mehle
  */
+#include "../timers_config.h"
+
+/* ====== DEVICE HEADER ====== */
+#include DEVICE_HEADER
+
+/* ====== CORE HEADER ====== */
 
 /* ====== SECCION CRITICA ====== */
-#define TIMERS_CRITICAL_ENTER()     __asm volatile("csrci mstatus, 8")
-#define TIMERS_CRITICAL_EXIT()      __asm volatile("csrsi mstatus, 8")
+#define TIMERS_CRITICAL_ENTER()     Disable_global_interrupt()
+#define TIMERS_CRITICAL_EXIT()      Enable_global_interrupt()
 
 /* ====== DEFERRED ISR ====== */
 #define TIMERS_USE_DEFERRED_ISR     (0)

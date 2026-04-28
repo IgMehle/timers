@@ -12,7 +12,7 @@
 #include <stdint.h>
 #include <stdio.h>
 #include "timers_config.h"
-#include "timers_port_select.h"
+#include "portable/timers_port_select.h"
 
 /* ===== TIMER_T ===== */
 typedef struct timer {

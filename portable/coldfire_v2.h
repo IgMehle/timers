@@ -1,9 +1,15 @@
-/*
+/**
  * coldfire_v2.h
  *
  *  Created on: 26 apr. 2026
  *      Author: Ignacio Mehle
  */
+#include "../timers_config.h"
+
+/* ====== DEVICE HEADER ====== */
+#include DEVICE_HEADER
+
+/* ====== CORE HEADER ====== */
 
 /* ====== SECCION CRITICA ====== */
 #define TIMERS_CRITICAL_ENTER()     __asm__ volatile ("move.w #0x2700, %sr")

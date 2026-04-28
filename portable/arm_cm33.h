@@ -1,11 +1,16 @@
-/*
- * cortex_m4.h
+/**
+ * arm_cm33.h
  *
  *  Created on: 26 apr. 2026
  *      Author: Ignacio Mehle
  */
+#include "../timers_config.h"
 
-#include <core_cm4.h>
+/* ====== DEVICE HEADER ====== */
+#include DEVICE_HEADER
+
+/* ====== CORE HEADER ====== */
+#include <core_cm33.h>
 
 /* ====== SECCION CRITICA ====== */
 #define TIMERS_CRITICAL_ENTER()         __disable_irq()

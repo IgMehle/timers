@@ -1,10 +1,15 @@
-/*
- * cortex_m3.h
+/**
+ * arm_cm3.h
  *
  *  Created on: 26 apr. 2026
  *      Author: Ignacio Mehle
  */
+#include "../timers_config.h"
 
+/* ====== DEVICE HEADER ====== */
+#include DEVICE_HEADER
+
+/* ====== CORE HEADER ====== */
 #include <core_cm3.h>
 
 /* ====== SECCION CRITICA ====== */
