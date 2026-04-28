@@ -7,7 +7,7 @@
 #ifndef TIMERS_PORTABLE_ARM_CM4_H_
 #define TIMERS_PORTABLE_ARM_CM4_H_
 
-#include <timers_config.h>
+#include "../timers_config.h"
 
 /* ====== DEVICE HEADER ====== */
 #include DEVICE_HEADER

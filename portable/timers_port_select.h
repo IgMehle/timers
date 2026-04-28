@@ -7,7 +7,7 @@
 #ifndef TIMERS_PORT_SELECT_H_
 #define TIMERS_PORT_SELECT_H_
 
-#include <timers_config.h>
+#include "../timers_config.h"
 
 #if (TIMERS_ARCH == TIMERS_ARCH_AVR)
     #include "avr.h"
