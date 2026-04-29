@@ -39,7 +39,7 @@ void timers_init(timer_t *my_timers, uint8_t n)
 #endif
 }
 
-uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority)
+uint8_t give_timer(uint32_t reload, uint8_t priority, GIVE_TIMER_ARGS)
 {
 	uint8_t n_timer = 0xFF;
 	// Si no llegue al maximo de timers, agrego
@@ -52,6 +52,9 @@ uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority)
 		timers[timers_count].reload =   reload;
 		timers[timers_count].ticks =    reload;
 		timers[timers_count].callback = callback;
+#if USE_CALLBACK_CONTEXT
+        timers[timers_count].context = context;
+#endif
 #if USE_QUEUES == 0
         timers[timers_count].event =    0;
 #endif
@@ -131,6 +134,9 @@ timer_t get_timer_status(uint8_t id)
     tmr.reload =    timers[id].reload;
     tmr.ticks =     timers[id].ticks;
     tmr.callback =  timers[id].callback;
+#if USE_CALLBACK_CONTEXT
+    tmr.context = timers[id].context;
+#endif
 #if USE_QUEUES == 0
     tmr.event =     timers[id].event;
 #endif
@@ -156,9 +162,9 @@ void timers_tick(void)
 				timers[i].event = 1;
 #endif
 
-#if TIMER_CRITICAL_ENABLED
+#if USE_TIMER_CRITICAL
                 uint8_t callback_status = CALLBACK_OK;
-                callback_status = timers[i].callback();
+                callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
 #endif
 				// si el timer es PERIODICO, solo recargo el contador
 				if (timers[i].rep == TIMER_PERIODIC) {
@@ -219,7 +225,7 @@ void timers_process(uint8_t priority)
     // vacio la queue de timers de la prioridad especifica
     while (pop_timers_queue(&id, priority)) {
         // llamo al callback
-        callback_status = timers[id].callback();
+        callback_status = TIMER_INVOKE_CALLBACK(&timers[id]);
     }
 #else
     // itero por todos los timers creados
@@ -228,7 +234,7 @@ void timers_process(uint8_t priority)
         // y el timer tiene la prioridad especificada
         if (timers[i].event && timers[i].priority == priority) {
             // llamo al callback
-            callback_status = timers[i].callback();
+            callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
             // limpio flag de event
             timers[i].event = 0;
         }

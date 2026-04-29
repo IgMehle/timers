@@ -9,34 +9,8 @@
 #define TIMERS_H_
 
 /* ===== INCLUDES ===== */
-#include <stdint.h>
 #include "timers_config.h"
 #include "portable/timers_port_select.h"
-
-/* ===== TIMER_T ===== */
-typedef struct timer {
-    uint8_t             priority;
-	volatile uint8_t    enabled;
-#if USE_QUEUES == 0
-	volatile uint8_t    event;
-#endif
-    volatile uint8_t    rep;
-	uint8_t             (*callback)(void);
-    uint32_t            reload;
-	volatile uint32_t   ticks;
-} timer_t;
-
-/* ===== TIMERS_QUEUE_T ===== */
-typedef struct timers_queue {
-    volatile uint8_t    bf[QUEUE_SIZE];
-    // escribe la ISR (timers_tick)
-    volatile uint8_t    head;
-    // lee el consumidor (timers_process)
-    volatile uint8_t    tail;
-    // flags
-    // volatile uint8_t empty;
-    // volatile uint8_t full;
-} timers_queue_t;
 
 /* ===== DEFINICIONES ===== */
 #define EVENT_PENDING   1U
@@ -47,10 +21,56 @@ typedef struct timers_queue {
 #define CALLBACK_OK     0U
 #define QUEUE_NACK      0U
 #define QUEUE_ACK       1U
+#define TIMER_CRITICAL  0xFF
+
+// Callback typedef
+typedef TIMER_CALLBACK_RET_TYPE (*timer_callback_t)(TIMER_CALLBACK_ARGS);
+
+/* ===== TIMER_T ===== */
+typedef struct {
+    uint8_t             priority;
+	volatile uint8_t    enabled;
+#if USE_QUEUES == 0
+	volatile uint8_t    event;
+#endif
+    volatile uint8_t    rep;
+    uint32_t            reload;
+	volatile uint32_t   ticks;
+    timer_callback_t    callback;
+#if USE_CALLBACK_CONTEXT
+    void                *context;
+#endif
+} timer_t;
+
+// Macro de llamada al callback
+#if USE_CALLBACK_CONTEXT
+    #define TIMER_INVOKE_CALLBACK(timer) (timer)->callback((timer)->context)
+#else
+    #define TIMER_INVOKE_CALLBACK(timer) (timer)->callback()
+#endif
+
+// Argumentos de give_timer()
+#if USE_CALLBACK_CONTEXT
+    #define GIVE_TIMER_ARGS timer_callback_t callback, void *context
+#else
+    #define GIVE_TIMER_ARGS timer_callback_t callback
+#endif
+
+/* ===== TIMERS_QUEUE_T ===== */
+typedef struct {
+    volatile uint8_t    bf[QUEUE_SIZE];
+    // escribe la ISR (timers_tick)
+    volatile uint8_t    head;
+    // lee el consumidor (timers_process)
+    volatile uint8_t    tail;
+    // flags
+    // volatile uint8_t empty;
+    // volatile uint8_t full;
+} timers_queue_t;
 
 /* ===== INIT / CONFIG ===== */
 void timers_init(timer_t *my_timers, uint8_t n);
-uint8_t give_timer(uint32_t reload, uint8_t (*callback)(), uint8_t priority);
+uint8_t give_timer(uint32_t reload, uint8_t priority, GIVE_TIMER_ARGS);
 
 /* ===== TIMER MANIPULATION ===== */
 void on_timer(uint8_t id, uint8_t rep);
