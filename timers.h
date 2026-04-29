@@ -13,21 +13,59 @@
 #include "portable/timers_port_select.h"
 
 /* ===== DEFINICIONES ===== */
-#define EVENT_PENDING   1U
-#define EVENT_CLEAR     0U
-#define MAX_PRIORITIES  8U
-#define TIMER_PERIODIC	0xFF
-#define TIMER_MAX_REP   0xFE
-#define CALLBACK_OK     0U
-#define QUEUE_NACK      0U
-#define QUEUE_ACK       1U
-#define TIMER_CRITICAL  0xFF
+#define EVENT_PENDING   (1)
+#define EVENT_CLEAR     (0)
+#define MAX_PRIORITIES  (8)
+#define TIMER_PERIODIC	(0xFF)
+#define TIMER_MAX_REP   (0xFE)
+#define CALLBACK_OK     (0)
+#define QUEUE_NACK      (0)
+#define QUEUE_ACK       (1)
+#define TIMER_CRITICAL  (0xFF)
+
+/* ===== TIMER BYTE FLAGS ===== */
+// 0: enabled
+// 1: pending (event)
+// 2: critical
+// 3: RESERVED (watchdog_expired)
+// 4: RESERVED (prescaler)
+// 5: priority.b0
+// 6: priority.b1
+// 7: priority.b2
+
+#define FLAG_ENABLED    (1 << 0)
+#define FLAG_PENDING    (1 << 1)
+#define FLAG_CRITICAL   (1 << 2)
+#define FLAG_WD_EXPIRED (1 << 3)
+#define FLAG_PRESCALER  (1 << 4)
+#define PRIORITY_MASK   (0xE0)
+#define PRIORITY_SHIFT  (5)
+
+/* ===== FLAGS INLINES ===== */
+static inline uint8_t flags_get(uint8_t flags, uint8_t mask) {
+    return (flags & mask);
+}
+static inline void flags_set(uint8_t *flags, uint8_t mask) {
+    *flags |= mask;
+}
+static inline void flags_clear(uint8_t *flags, uint8_t mask) {
+    *flags &= ~mask;
+}
+static inline uint8_t flags_get_priority(uint8_t flags) {
+    return (flags & PRIORITY_MASK) >> PRIORITY_SHIFT;
+}
+static inline void flags_set_priority(uint8_t *flags, uint8_t priority) {
+    priority &= 0x07;
+    *flags &= ~PRIORITY_MASK;
+    *flags |= (priority << PRIORITY_SHIFT);
+}
 
 // Callback typedef
 typedef TIMER_CALLBACK_RET_TYPE (*timer_callback_t)(TIMER_CALLBACK_ARGS);
 
 /* ===== TIMER_T ===== */
 typedef struct {
+//    volatile uint8_t    flags
     uint8_t             priority;
 	volatile uint8_t    enabled;
 #if USE_QUEUES == 0
