@@ -16,28 +16,36 @@
 #define EVENT_PENDING   (1)
 #define EVENT_CLEAR     (0)
 #define MAX_PRIORITIES  (8)
-#define TIMER_PERIODIC	(0xFF)
+#define PERIODIC_TIMER	(0xFF)
 #define TIMER_MAX_REP   (0xFE)
 #define CALLBACK_OK     (0)
 #define QUEUE_NACK      (0)
 #define QUEUE_ACK       (1)
 #define TIMER_CRITICAL  (0xFF)
 
+/* ===== COUNTERS SIZE ===== */
+#if USE_16BIT_COUNTERS
+    #define MAX_N_TICKS (0xFFFF)
+    typedef counter_t   uint16_t        
+#else
+    #define MAX_N_TICKS (0xFFFFFFFF)
+    typedef counter_t   uint32_t
+#endif
+
 /* ===== TIMER BYTE FLAGS ===== */
 // 0: enabled
 // 1: pending (event)
 // 2: critical
-// 3: RESERVED (watchdog_expired)
-// 4: RESERVED (prescaler)
+// 3: prescaler
+// 4: RESERVED (watchdog_expired)
 // 5: priority.b0
 // 6: priority.b1
 // 7: priority.b2
-
 #define FLAG_ENABLED    (1 << 0)
 #define FLAG_PENDING    (1 << 1)
 #define FLAG_CRITICAL   (1 << 2)
-#define FLAG_WD_EXPIRED (1 << 3)
-#define FLAG_PRESCALER  (1 << 4)
+#define FLAG_PRESCALER  (1 << 3)
+#define FLAG_WD_EXPIRED (1 << 4)
 #define PRIORITY_MASK   (0xE0)
 #define PRIORITY_SHIFT  (5)
 
@@ -65,15 +73,15 @@ typedef TIMER_CALLBACK_RET_TYPE (*timer_callback_t)(TIMER_CALLBACK_ARGS);
 
 /* ===== TIMER_T ===== */
 typedef struct {
-//    volatile uint8_t    flags
-    uint8_t             priority;
-	volatile uint8_t    enabled;
-#if USE_QUEUES == 0
-	volatile uint8_t    event;
-#endif
+    volatile uint8_t    flags
+//    uint8_t             priority;
+//	volatile uint8_t    enabled;
+//#if USE_QUEUES == 0
+//	volatile uint8_t    event;
+//#endif
     volatile uint8_t    rep;
-    uint32_t            reload;
-	volatile uint32_t   ticks;
+    counter_t           reload
+    volatile counter_t  ticks
     timer_callback_t    callback;
 #if USE_CALLBACK_CONTEXT
     void                *context;
@@ -96,7 +104,7 @@ typedef struct {
 
 /* ===== TIMERS_QUEUE_T ===== */
 typedef struct {
-    volatile uint8_t    bf[QUEUE_SIZE];
+    volatile uint8_t    bf[TIMERS_QUEUE_SIZE];
     // escribe la ISR (timers_tick)
     volatile uint8_t    head;
     // lee el consumidor (timers_process)

@@ -18,7 +18,7 @@ static uint8_t n_timers = 0;
 static uint8_t timers_count = 0;
 
 #if USE_QUEUES
-static timers_queue_t timers_queues[N_PRIORITIES];
+static timers_queue_t timers_queues[N_TIMER_PRIORITIES];
 #endif
 
 /* -----------------------------------------------------
@@ -39,24 +39,38 @@ void timers_init(timer_t *my_timers, uint8_t n)
 #endif
 }
 
-uint8_t give_timer(uint32_t reload, uint8_t priority, GIVE_TIMER_ARGS)
+uint8_t give_timer(counter_t reload, uint8_t priority, GIVE_TIMER_ARGS)
 {
 	uint8_t n_timer = 0xFF;
+    uint8_t flags = 0x00;
 	// Si no llegue al maximo de timers, agrego
 	if (timers_count < n_timers) {
 		// Lleno los campos del nuevo timer
-		// Inicia apagado
-		timers[timers_count].enabled =  0;
-		timers[timers_count].priority = priority;
-		timers[timers_count].rep =      TIMER_PERIODIC;
+        // Default flags: 0b00000000
+        // SETEO PRIORIDAD
+        if (priority < N_TIMER_PRIORITIES) {
+            flags_set_priority(&flags, priority);
+        }
+        else {
+            // si paso priority = TIMER_CRITICAL
+            // y no tengo activado USE_TIMER_CRITICAL
+            // coloco maxima prioridad por default
+            if (priority == TIMER_CRITICAL) {   
+#if USE_TIMER_CRITICAL
+                flags_set(&flags, FLAG_CRITICAL);      
+#endif
+                flags_set_priority(&flags, 0);
+            }
+            // clamp contra overflow
+            else flags_set_priority(&flags, (N_TIMER_PRIORITIES-1));
+        }
+        timers[timers_count].flags =    flags;
+		timers[timers_count].rep =      PERIODIC_TIMER;
 		timers[timers_count].reload =   reload;
 		timers[timers_count].ticks =    reload;
 		timers[timers_count].callback = callback;
 #if USE_CALLBACK_CONTEXT
         timers[timers_count].context = context;
-#endif
-#if USE_QUEUES == 0
-        timers[timers_count].event =    0;
 #endif
 		// Devuelvo el numero de timer
 		n_timer = timers_count;
@@ -73,17 +87,17 @@ void on_timer(uint8_t id, uint8_t rep)
 {
 	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
-	timers[id].enabled = 1;
+	flags_set(&timers[id].flags. FLAG_ENABLED);
 }
 
 void pause_timer(uint8_t id)
 {
-	timers[id].enabled = 0;
+	flags_clear(&timers[id].flags. FLAG_ENABLED);
 }
 
 void continue_timer(uint8_t id)
 {
-	timers[id].enabled = 1;
+    flags_set(&timers[id].flags. FLAG_ENABLED);
 }
 
 void reload_timer(uint8_t id)
@@ -92,11 +106,24 @@ void reload_timer(uint8_t id)
 }
 
 void set_timer_priority(uint8_t id, uint8_t priority)
-{
-    if (priority < N_PRIORITIES) {
-        timers[id].priority = priority;
+{   
+    // SETEO PRIORIDAD
+    if (priority < N_TIMER_PRIORITIES) {
+        flags_set_priority(&timers[id].flags, priority);
     }
-    else timers[id].priority = N_PRIORITIES - 1;
+    else {
+        // si paso priority == TIMER_CRITICAL
+        // y no tengo activado USE_TIMER_CRITICAL
+        // coloco maxima prioridad por default
+        if (priority == TIMER_CRITICAL) {
+#if USE_TIMER_CRITICAL
+            flags_set(&timers[id].flags, FLAG_CRITICAL);      
+#endif
+            flags_set_priority(&timers[id].flags, 0);
+        }
+        // clamp contra overflow
+        else flags_set_priority(&timers[id].flags, (N_TIMER_PRIORITIES-1));
+    }
 }
 
 void set_timer_repeats(uint8_t id, uint8_t rep)
@@ -113,7 +140,7 @@ void add_timer_repeats(uint8_t id, uint8_t rep)
     }
 }
 
-void resize_timer(uint8_t id, uint32_t reload)
+void resize_timer(uint8_t id, counter_t reload)
 {
 	timers[id].reload = reload;
 	timers[id].ticks = reload;
@@ -121,15 +148,14 @@ void resize_timer(uint8_t id, uint32_t reload)
 
 void off_timer(uint8_t id)
 {
-	timers[id].enabled = 0;
+	flags_clear(&timers[id].flags, FLAG_ENABLED);
 	timers[id].ticks = timers[id].reload;
 }
 
 timer_t get_timer_status(uint8_t id)
 {
     timer_t tmr;
-    tmr.priority =  timers[id].priority;
-    tmr.enabled =   timers[id].enabled;
+    tmr.flags =     timers[id].flags;
     tmr.rep =       timers[id].rep;
     tmr.reload =    timers[id].reload;
     tmr.ticks =     timers[id].ticks;
@@ -137,9 +163,9 @@ timer_t get_timer_status(uint8_t id)
 #if USE_CALLBACK_CONTEXT
     tmr.context = timers[id].context;
 #endif
-#if USE_QUEUES == 0
-    tmr.event =     timers[id].event;
-#endif
+//#if USE_QUEUES == 0
+//    tmr.event =     timers[id].event;
+//#endif
     return tmr;
 }
 
@@ -151,33 +177,40 @@ void timers_tick(void)
 	// itero por todos los timers creados
 	for (uint8_t i = 0; i < timers_count; i++) {
 		// si el timer esta habilitado
-		if (timers[i].enabled) {
+		if (flags_get(timers[i].flags, FLAG_ENABLED)) {
 			// si vencio el contador
 			if (timers[i].ticks == 0) {
-#if USE_QUEUES
-                // encolo timer
-                push_timers_queue(i, timers[i].priority);
-#else
-                // levanto el flag de event
-				timers[i].event = 1;
-#endif
-
+                // Si el timer esta marcado como critical
+                // Y esta activo USE_TIMER_CRITICAL
+                // llamo al callback
+                if (flags_get(timers[i].flags, FLAG_CRITICAL)) {
 #if USE_TIMER_CRITICAL
-                uint8_t callback_status = CALLBACK_OK;
-                callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
+                    uint8_t callback_status = CALLBACK_OK;
+                    callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
 #endif
-				// si el timer es PERIODICO, solo recargo el contador
-				if (timers[i].rep == TIMER_PERIODIC) {
-                    timers[i].ticks = timers[i].reload;
                 }
-				// si NO ES PERIODICO, decremento repeticiones
-				else {
+                // si el timer NO esta marcado como CRITICAL
+                // lo encolo / levanto flag de pending
+                else {
+#if USE_QUEUES
+                    // encolo timer
+                    push_timers_queue(i, flags_get_priority(timers[i].flags));
+#else
+                    // levanto el flag de pending
+				    flags_set(&timers[i].flags, FLAG_PENDING);
+#endif
+                }
+    			// recargo el contador
+                timers[i].ticks = timers[i].reload;
+
+				// si el timer NO ES PERIODICO, decremento repeticiones
+				if (timers[i].rep != PERIODIC_TIMER) {
                     if (timers[i].rep != 0) timers[i].rep--;
                     // si se acabaron las repeticiones, lo deshabilito
-                    if (timers[i].rep == 0) timers[i].enabled = 0;
+                    if (timers[i].rep == 0) flags_clear(&timers[i].flags, FLAG_ENABLED);
                 }
 			}
-			// si el contador no esta en cero, decremento
+			// si el contador no esta en cero, decremento ticks
 			else {
 				timers[i].ticks--;
 			}
@@ -221,22 +254,24 @@ void timers_process(uint8_t priority)
     uint8_t callback_status = CALLBACK_OK;
 
 #if USE_QUEUES
-    uint8_t id;
+    uint8_t i;
     // vacio la queue de timers de la prioridad especifica
-    while (pop_timers_queue(&id, priority)) {
+    while (pop_timers_queue(&i, priority)) {
         // llamo al callback
-        callback_status = TIMER_INVOKE_CALLBACK(&timers[id]);
+        callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
     }
 #else
     // itero por todos los timers creados
 	for (uint8_t i = 0; i < timers_count; i++) {
-        // si el flag de event esta habilitado
+        // si el flag de pending esta habilitado
         // y el timer tiene la prioridad especificada
-        if (timers[i].event && timers[i].priority == priority) {
-            // llamo al callback
-            callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
-            // limpio flag de event
-            timers[i].event = 0;
+        if (flags_get(timers[i].flags, FLAG_PENDING)) {
+            if (flags_get_priority(timers[i].flags) == priority) {
+                // llamo al callback
+                callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
+                // limpio flag de pending
+                flags_clear(&timers[i].flags, FLAG_PENDING);
+            }
         }
     }
 #endif

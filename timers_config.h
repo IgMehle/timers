@@ -19,7 +19,7 @@
 /* ----------------------------------------------- */
 
 // Cantidad maxima de timers
-#define MAX_N_TIMERS            16
+#define MAX_N_TIMERS            (255)
 
 // Callback return type
 #ifndef TIMER_CALLBACK_RET_TYPE
@@ -27,7 +27,7 @@
 #endif
 
 // Usar callback context o parametros de tipo fijo
-#define USE_CALLBACK_CONTEXT    1
+#define USE_CALLBACK_CONTEXT    (1)
 
 // Argumentos de callback
 #if USE_CALLBACK_CONTEXT
@@ -37,17 +37,23 @@
 #endif
 
 // Usar queues o marcado de eventos
-#define USE_QUEUES              1
+#define USE_QUEUES              (1)
 
 // Largo de queue de timers (potencia de 2)
-#define QUEUE_SIZE              16
-#define QUEUE_MASK              (QUEUE_SIZE - 1)
+#define TIMERS_QUEUE_SIZE       (16)
+#define TIMERS_QUEUE_MASK       (TIMERS_QUEUE_SIZE - 1)
 
 // Cantidad de niveles de prioridad
-#define N_TIMER_PRIORITIES      3
+#define N_TIMER_PRIORITIES      (3)
 
 // Habilitacion de callbacks en ISR
-#define USE_TIMER_CRITICAL      0
+#define USE_TIMER_CRITICAL      (0)
+
+// Prescaler de timer
+#define TIMER_PRESCALER_VALUE   (1000)
+
+// Campos reload/ticks de 16/32 bits
+#define USE_16BIT_COUNTERS      (1)
 /* ----------------------------------------------- */
 
 #ifndef USE_TIMER_CRITICAL
