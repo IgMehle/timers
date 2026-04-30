@@ -16,6 +16,7 @@
 static timer_t *timers = 0;
 static uint8_t n_timers = 0;
 static uint8_t timers_count = 0;
+static volatile uint16_t timers_prescaler_counter = TIMERS_PRESCALER_VALUE;
 
 #if USE_QUEUES
 static timers_queue_t timers_queues[N_TIMER_PRIORITIES];
@@ -87,17 +88,17 @@ void on_timer(uint8_t id, uint8_t rep)
 {
 	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
-	flags_set(&timers[id].flags. FLAG_ENABLED);
+	flags_set(&timers[id].flags, FLAG_ENABLED);
 }
 
 void pause_timer(uint8_t id)
 {
-	flags_clear(&timers[id].flags. FLAG_ENABLED);
+	flags_clear(&timers[id].flags, FLAG_ENABLED);
 }
 
 void continue_timer(uint8_t id)
 {
-    flags_set(&timers[id].flags. FLAG_ENABLED);
+    flags_set(&timers[id].flags, FLAG_ENABLED);
 }
 
 void reload_timer(uint8_t id)
@@ -140,10 +141,20 @@ void add_timer_repeats(uint8_t id, uint8_t rep)
     }
 }
 
-void resize_timer(uint8_t id, counter_t reload)
+void set_timer_prescaler(uint8_t id)
 {
-	timers[id].reload = reload;
-	timers[id].ticks = reload;
+    flags_set(&timers[id].flags, FLAG_PRESCALER);
+}
+
+void clear_timer_prescaler(uint8_t id)
+{
+    flags_clear(&timers[id].flags, FLAG_PRESCALER);
+}
+
+void resize_timer(uint8_t id, counter_t ticks)
+{
+	timers[id].reload = ticks;
+	timers[id].ticks = ticks;
 }
 
 void off_timer(uint8_t id)
@@ -174,6 +185,9 @@ timer_t get_timer_status(uint8_t id)
  * -----------------------------------------------------*/
 void timers_tick(void)
 {
+    // Decremento contador de prescaler por cada tick
+    timers_prescaler_counter--;
+
 	// itero por todos los timers creados
 	for (uint8_t i = 0; i < timers_count; i++) {
 		// si el timer esta habilitado
@@ -210,12 +224,23 @@ void timers_tick(void)
                     if (timers[i].rep == 0) flags_clear(&timers[i].flags, FLAG_ENABLED);
                 }
 			}
-			// si el contador no esta en cero, decremento ticks
+			// si el contador no esta en cero
 			else {
-				timers[i].ticks--;
+                // Si el prescaler del timer esta activo
+                if (flags_get(timers[i].flags, FLAG_PRESCALER)) {
+                    // Si el valor de timers_prescaler_counter esta en 0
+                    // Decremento un tick del timer
+                    if (timers_prescaler_counter == 0) timers[i].ticks--;
+                }
+                // Si no tiene prescaler, decremento ticks normalmente
+				else timers[i].ticks--;
 			}
 		}
 	}
+
+    if (timers_prescaler_counter == 0) {
+        timers_prescaler_counter = TIMERS_PRESCALER_VALUE;
+    }
 }
 
 uint8_t push_timers_queue(uint8_t id, uint8_t priority)
@@ -223,7 +248,7 @@ uint8_t push_timers_queue(uint8_t id, uint8_t priority)
     // puntero a queue segun prioridad del timer
     timers_queue_t *q = &timers_queues[priority];
     // calculo la posicion del nuevo head
-    uint8_t next_head = (q->head + 1) & QUEUE_MASK;
+    uint8_t next_head = (q->head + 1) & TIMERS_QUEUE_MASK;
     // si next apunta al tail, la cola esta llena
     if (next_head == q->tail) {
         // overflow
@@ -245,7 +270,7 @@ uint8_t pop_timers_queue(uint8_t *id, uint8_t priority)
     // leo el numero de timer de la cola
     *id = q->bf[q->tail];
     // actualizo tail
-    q->tail = (q->tail + 1) & QUEUE_MASK;
+    q->tail = (q->tail + 1) & TIMERS_QUEUE_MASK;
     return QUEUE_ACK;
 }
 

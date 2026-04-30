@@ -25,11 +25,9 @@
 
 /* ===== COUNTERS SIZE ===== */
 #if USE_16BIT_COUNTERS
-    #define MAX_N_TICKS (0xFFFF)
-    typedef counter_t   uint16_t        
+typedef uint16_t    counter_t  
 #else
-    #define MAX_N_TICKS (0xFFFFFFFF)
-    typedef counter_t   uint32_t
+typedef uint32_t    counter_t
 #endif
 
 /* ===== TIMER BYTE FLAGS ===== */
@@ -73,15 +71,15 @@ typedef TIMER_CALLBACK_RET_TYPE (*timer_callback_t)(TIMER_CALLBACK_ARGS);
 
 /* ===== TIMER_T ===== */
 typedef struct {
-    volatile uint8_t    flags
+    volatile uint8_t    flags;
 //    uint8_t             priority;
 //	volatile uint8_t    enabled;
 //#if USE_QUEUES == 0
 //	volatile uint8_t    event;
 //#endif
     volatile uint8_t    rep;
-    counter_t           reload
-    volatile counter_t  ticks
+    counter_t           reload;
+    volatile counter_t  ticks;
     timer_callback_t    callback;
 #if USE_CALLBACK_CONTEXT
     void                *context;
@@ -116,7 +114,7 @@ typedef struct {
 
 /* ===== INIT / CONFIG ===== */
 void timers_init(timer_t *my_timers, uint8_t n);
-uint8_t give_timer(uint32_t reload, uint8_t priority, GIVE_TIMER_ARGS);
+uint8_t give_timer(counter_t reload, uint8_t priority, GIVE_TIMER_ARGS);
 
 /* ===== TIMER MANIPULATION ===== */
 void on_timer(uint8_t id, uint8_t rep);
@@ -126,7 +124,9 @@ void reload_timer(uint8_t id);
 void set_timer_priority(uint8_t id, uint8_t priority);
 void set_timer_repeats(uint8_t id, uint8_t rep);
 void add_timer_repeats(uint8_t id, uint8_t rep);
-void resize_timer(uint8_t id, uint32_t time);
+void set_timer_prescaler(uint8_t id);
+void clear_timer_prescaler(uint8_t id);
+void resize_timer(uint8_t id, counter_t ticks);
 void off_timer(uint8_t id);
 timer_t get_timer_status(uint8_t id);
 

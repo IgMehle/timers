@@ -49,8 +49,8 @@
 // Habilitacion de callbacks en ISR
 #define USE_TIMER_CRITICAL      (0)
 
-// Prescaler de timer
-#define TIMER_PRESCALER_VALUE   (1000)
+// Prescaler de timers
+#define TIMERS_PRESCALER_VALUE   (1000)
 
 // Campos reload/ticks de 16/32 bits
 #define USE_16BIT_COUNTERS      (1)
