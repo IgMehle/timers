@@ -40,7 +40,7 @@ void timers_init(timer_t *my_timers, uint8_t n)
 #endif
 }
 
-uint8_t give_timer(counter_t reload, uint8_t priority, GIVE_TIMER_ARGS)
+uint8_t give_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS)
 {
 	uint8_t n_timer = 0xFF;
     uint8_t flags = 0x00;
@@ -67,16 +67,18 @@ uint8_t give_timer(counter_t reload, uint8_t priority, GIVE_TIMER_ARGS)
         }
         timers[timers_count].flags =    flags;
 		timers[timers_count].rep =      PERIODIC_TIMER;
-		timers[timers_count].reload =   reload;
-		timers[timers_count].ticks =    reload;
+		timers[timers_count].reload =   ticks;
+		timers[timers_count].ticks =    ticks;
 		timers[timers_count].callback = callback;
 #if USE_CALLBACK_CONTEXT
         timers[timers_count].context = context;
 #endif
+        TIMERS_CRITICAL_ENTER();
 		// Devuelvo el numero de timer
 		n_timer = timers_count;
 		// Incremento la cantidad de timers creados
 		timers_count++;
+        TIMERS_CRITICAL_EXIT();
 	}
 	return n_timer;
 }
@@ -86,28 +88,37 @@ uint8_t give_timer(counter_t reload, uint8_t priority, GIVE_TIMER_ARGS)
  * -----------------------------------------------------*/
 void on_timer(uint8_t id, uint8_t rep)
 {
+    TIMERS_CRITICAL_ENTER();
 	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
 	flags_set(&timers[id].flags, FLAG_ENABLED);
+    TIMERS_CRITICAL_EXIT();
 }
 
 void pause_timer(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
 	flags_clear(&timers[id].flags, FLAG_ENABLED);
+    TIMERS_CRITICAL_EXIT();
 }
 
 void continue_timer(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
     flags_set(&timers[id].flags, FLAG_ENABLED);
+    TIMERS_CRITICAL_EXIT();
 }
 
 void reload_timer(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
 	timers[id].ticks = timers[id].reload;
+    TIMERS_CRITICAL_EXIT();
 }
 
 void set_timer_priority(uint8_t id, uint8_t priority)
 {   
+    TIMERS_CRITICAL_ENTER();
     // SETEO PRIORIDAD
     if (priority < N_TIMER_PRIORITIES) {
         flags_set_priority(&timers[id].flags, priority);
@@ -125,6 +136,7 @@ void set_timer_priority(uint8_t id, uint8_t priority)
         // clamp contra overflow
         else flags_set_priority(&timers[id].flags, (N_TIMER_PRIORITIES-1));
     }
+    TIMERS_CRITICAL_EXIT();
 }
 
 void set_timer_repeats(uint8_t id, uint8_t rep)
@@ -143,24 +155,32 @@ void add_timer_repeats(uint8_t id, uint8_t rep)
 
 void set_timer_prescaler(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
     flags_set(&timers[id].flags, FLAG_PRESCALER);
+    TIMERS_CRITICAL_EXIT();
 }
 
 void clear_timer_prescaler(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
     flags_clear(&timers[id].flags, FLAG_PRESCALER);
+    TIMERS_CRITICAL_EXIT();
 }
 
 void resize_timer(uint8_t id, counter_t ticks)
 {
+    TIMERS_CRITICAL_ENTER();
 	timers[id].reload = ticks;
 	timers[id].ticks = ticks;
+    TIMERS_CRITICAL_EXIT();
 }
 
 void off_timer(uint8_t id)
 {
+    TIMERS_CRITICAL_ENTER();
 	flags_clear(&timers[id].flags, FLAG_ENABLED);
 	timers[id].ticks = timers[id].reload;
+    TIMERS_CRITICAL_EXIT();
 }
 
 timer_t get_timer_status(uint8_t id)
@@ -292,10 +312,10 @@ void timers_process(uint8_t priority)
         // y el timer tiene la prioridad especificada
         if (flags_get(timers[i].flags, FLAG_PENDING)) {
             if (flags_get_priority(timers[i].flags) == priority) {
-                // llamo al callback
-                callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
                 // limpio flag de pending
                 flags_clear(&timers[i].flags, FLAG_PENDING);
+                // llamo al callback
+                callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
             }
         }
     }

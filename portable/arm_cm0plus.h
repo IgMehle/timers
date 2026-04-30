@@ -17,6 +17,8 @@
 // #include <core_cm0plus.h>
 
 /* ====== SECCION CRITICA ====== */
+// #define SYSTICK_IRQDIS	NVIC_DisableIRQ(SysTick_IRQn)
+// #define SYSTICK_IRQEN	NVIC_EnableIRQ(SysTick_IRQn)
 #define TIMERS_CRITICAL_ENTER()         __disable_irq()
 #define TIMERS_CRITICAL_EXIT()          __enable_irq()
 

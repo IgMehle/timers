@@ -21,15 +21,38 @@
 // Cantidad maxima de timers
 #define MAX_N_TIMERS            (255)
 
-// Callback return type
+/**
+ * @brief Tipo del valor de retorno de los callbacks.
+ * Puede redefinirse antes de incluir este header.
+ */
 #ifndef TIMER_CALLBACK_RET_TYPE
 #define TIMER_CALLBACK_RET_TYPE uint8_t
 #endif
 
-// Usar callback context o parametros de tipo fijo
+/**
+ * @brief Habilita el campo `context` en timer_t y su pasaje automatico al callback.
+ *
+ * USE_CALLBACK_CONTEXT = 1:
+ *   - timer_t incluye un campo `void *context`
+ *   - Los callbacks reciben ese puntero como argumento
+ *   - Permite pasarle estado arbitrario al callback sin variables globales
+ *
+ * USE_CALLBACK_CONTEXT = 0:
+ *   - Los callbacks no reciben argumentos
+ *   - Util si todos los callbacks acceden al estado por otros medios (globales, etc.)
+ */
 #define USE_CALLBACK_CONTEXT    (1)
 
-// Argumentos de callback
+/**
+ * @brief Firma de los argumentos del callback segun la configuracion.
+ *
+ * El nombre `context` en el typedef es ignorado por el compilador pero
+ * sirve como documentacion: indica que ese void* es el estado del llamador,
+ * no un argumento de proposito general.
+ *
+ * Consistente con el campo `void *context` de timer_t y con la convencion
+ * de librerias como POSIX (pthread), FreeRTOS (pvParameters) y GTK (user_data).
+ */
 #if USE_CALLBACK_CONTEXT
     #define TIMER_CALLBACK_ARGS void *context
 #else
