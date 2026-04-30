@@ -233,6 +233,11 @@ void timers_tick(void)
                     // levanto el flag de pending
 				    flags_set(&timers[i].flags, FLAG_PENDING);
 #endif
+#if TIMERS_USE_DEFERRED_ISR
+					// disparo DEFERRED ISR
+					// ej: PendSV_Handler() (ARM Cortex-M)
+					TIMERS_TRIGGER_DEFERRED();
+#endif
                 }
     			// recargo el contador
                 timers[i].ticks = timers[i].reload;
@@ -304,7 +309,7 @@ void timers_process(uint8_t priority)
     while (pop_timers_queue(&i, priority)) {
         // llamo al callback
         callback_status = TIMER_INVOKE_CALLBACK(&timers[i]);
-    }
+    }	
 #else
     // itero por todos los timers creados
 	for (uint8_t i = 0; i < timers_count; i++) {

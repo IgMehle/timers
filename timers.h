@@ -43,7 +43,7 @@ typedef uint32_t    counter_t
 #define FLAG_PENDING    (1 << 1)
 #define FLAG_CRITICAL   (1 << 2)
 #define FLAG_PRESCALER  (1 << 3)
-#define FLAG_WD_EXPIRED (1 << 4)
+// #define FLAG_WD_EXPIRED (1 << 4)
 #define PRIORITY_MASK   (0xE0)
 #define PRIORITY_SHIFT  (5)
 
@@ -281,6 +281,8 @@ uint8_t push_timers_queue(uint8_t id, uint8_t priority);
  *                  QUEUE_NACK: Queue vacia
  */
 uint8_t pop_timers_queue(uint8_t *id, uint8_t priority);
+
+
 void timers_process(uint8_t priority);
 
 #endif /* TIMERS_H_ */
