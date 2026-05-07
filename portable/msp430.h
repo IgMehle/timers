@@ -15,14 +15,29 @@
 /* ====== CORE HEADER ====== */
 #include TIMERS_CORE_HEADER
 
-/* ====== SECCION CRITICA ====== */
-#define TIMERS_CRITICAL_ENTER()     __disable_interrupt()
-#define TIMERS_CRITICAL_EXIT()      __enable_interrupt()
+/* ===== TIMER IRQ ===== */
+#define TIMERS_DISABLE_TIMER_IRQ() 
+#define TIMERS_ENABLE_TIMER_IRQ() 
+
+/* ===== GENERAL IRQ ===== */
+#define TIMERS_DISABLE_ALL_IRQ()    __disable_interrupt()
+#define TIMERS_ENABLE_ALL_IRQ()     __enable_interrupt()
+
+/* ====== IRQ LOCK ====== */
+#if TIMER_IRQ_ONLY_LOCK            
+    #define TIMERS_IRQ_LOCK()           TIMERS_DISABLE_TIMER_IRQ()
+    #define TIMERS_IRQ_UNLOCK()         TIMERS_ENABLE_TIMER_IRQ()
+#else
+    #define TIMERS_IRQ_LOCK()           TIMERS_DISABLE_ALL_IRQ()
+    #define TIMERS_IRQ_UNLOCK()         TIMERS_ENABLE_ALL_IRQ()
+#endif
+
+/* ====== ATOMICIDAD ====== */
+#define TIMERS_ATOMIC_8                 (1)
+#define TIMERS_ATOMIC_16                (0)
+#define TIMERS_ATOMIC_32                (0)
 
 /* ====== DEFERRED ISR ====== */
 #define TIMERS_USE_DEFERRED_ISR     (0)
-
-/* ====== OPTIMIZACIONES ====== */
-#define TIMERS_ATOMIC_32            (0)
 
 #endif /* TIMERS_PORTABLE_MSP430_H_ */

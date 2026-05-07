@@ -1,11 +1,12 @@
 /**
- * avr.h
+ * rl78.h
  *
- *  Created on: 26 apr. 2026
+ *  Created on: 6 may. 2026
  *      Author: Ignacio Mehle
  */
-#ifndef TIMERS_PORTABLE_AVR_H_
-#define TIMERS_PORTABLE_AVR_H_
+
+#ifndef TIMERS_PORTABLE_RL78_H_
+#define TIMERS_PORTABLE_RL78_H_
 
 #include "../timers_config.h"
 
@@ -14,15 +15,14 @@
 
 /* ====== CORE HEADER ====== */
 #include TIMERS_CORE_HEADER
-// #include <avr/interrupt.h>
 
 /* ===== TIMER IRQ ===== */
 #define TIMERS_DISABLE_TIMER_IRQ()
 #define TIMERS_ENABLE_TIMER_IRQ()
 
 /* ===== GENERAL IRQ ===== */
-#define TIMERS_DISABLE_ALL_IRQ()    cli()
-#define TIMERS_ENABLE_ALL_IRQ()     sei()
+#define TIMERS_DISABLE_ALL_IRQ()    
+#define TIMERS_ENABLE_ALL_IRQ()     
 
 /* ====== IRQ LOCK ====== */
 #if TIMER_IRQ_ONLY_LOCK            
@@ -41,4 +41,4 @@
 /* ====== DEFERRED ISR ====== */
 #define TIMERS_USE_DEFERRED_ISR     (0)
 
-#endif /* TIMERS_PORTABLE_AVR_H_ */
+#endif /* TIMERS_PORTABLE_RL78_H_ */

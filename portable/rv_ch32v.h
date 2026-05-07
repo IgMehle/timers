@@ -1,12 +1,12 @@
 /**
- * coldfire_v2.h
+ * rv_ch32v.h
  *
- *  Created on: 26 apr. 2026
+ *  Created on: 6 may. 2026
  *      Author: Ignacio Mehle
  */
-#ifndef TIMERS_PORTABLE_COLDFIRE_V2_H_
-#define TIMERS_PORTABLE_COLDFIRE_V2_H_
-
+#ifndef TIMERS_PORTABLE_RV_CH32V_H_
+#define TIMERS_PORTABLE_RV_CH32V_H_
+ 
 #include "../timers_config.h"
 
 /* ====== DEVICE HEADER ====== */
@@ -20,8 +20,8 @@
 #define TIMERS_ENABLE_TIMER_IRQ() 
 
 /* ===== GENERAL IRQ ===== */
-#define TIMERS_DISABLE_ALL_IRQ()    __asm__ volatile ("move.w #0x2700, %sr")
-#define TIMERS_ENABLE_ALL_IRQ()     __asm__ volatile ("move.w #0x2000, %sr")
+#define TIMERS_DISABLE_ALL_IRQ()    __asm volatile("csrci mstatus, 8")
+#define TIMERS_ENABLE_ALL_IRQ()     __asm volatile("csrsi mstatus, 8")
 
 /* ====== IRQ LOCK ====== */
 #if TIMER_IRQ_ONLY_LOCK            
@@ -34,10 +34,11 @@
 
 /* ====== ATOMICIDAD ====== */
 #define TIMERS_ATOMIC_8                 (1)
-#define TIMERS_ATOMIC_16                (0)
-#define TIMERS_ATOMIC_32                (0)
+#define TIMERS_ATOMIC_16                (1)
+// si es RV32
+#define TIMERS_ATOMIC_32                (1) 
 
 /* ====== DEFERRED ISR ====== */
 #define TIMERS_USE_DEFERRED_ISR     (0)
 
-#endif /* TIMERS_PORTABLE_COLDFIRE_V2_H_ */
+#endif /* TIMERS_PORTABLE_RV_CH32V_H_ */

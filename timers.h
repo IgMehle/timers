@@ -244,6 +244,13 @@ void resize_timer(uint8_t id, counter_t ticks);
 void off_timer(uint8_t id);
 
 /**
+ * @brief Funcion para llamar de forma segura al callback asociado al timer
+ * 
+ * @param id    ID del timer
+ */
+void timers_safe_call(uint8_t id);
+
+/**
  * @brief Get the timer status object
  * 
  * @param id        ID del timer
@@ -282,7 +289,30 @@ uint8_t push_timers_queue(uint8_t id, uint8_t priority);
  */
 uint8_t pop_timers_queue(uint8_t *id, uint8_t priority);
 
-
+/**
+ * @brief   Realiza los llamados a los callbacks de los timers vencidos
+ *          dependiendo de la prioridad que se le pase como parámetro
+ * 
+ * @param priority  Prioridad de los callbacks que van a ser llamados,
+ *                  de estar en la queue correspondiente o con el flag
+ *                  de pending activo
+ */
 void timers_process(uint8_t priority);
+
+/* ===== PROTECCIONES DE NO ATOMICIDAD ===== */
+#if USE_16BIT_COUNTERS && !TIMERS_ATOMIC_16
+    #define TIMERS_PROTECT_COUNTERS     (1)
+#elif !USE_16BIT_COUNTERS && !TIMERS_ATOMIC_32
+    #define TIMERS_PROTECT_COUNTERS     (1)
+#else
+    #define TIMERS_PROTECT_COUNTERS     (0)
+#endif
+
+#if TIMERS_PROTECT_COUNTERS
+    #define TIMERS_COUNTERS_IRQ_LOCK()   TIMERS_IRQ_LOCK()
+    #define TIMERS_COUNTERS_IRQ_LOCK()   TIMERS_IRQ_UNLOCK()
+#else
+    #define TIMERS_COUNTERS_IRQ_LOCK()   // nop
+    #define TIMERS_COUNTERS_IRQ_LOCK()   // nop
 
 #endif /* TIMERS_H_ */

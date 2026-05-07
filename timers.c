@@ -73,12 +73,12 @@ uint8_t give_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS)
 #if USE_CALLBACK_CONTEXT
         timers[timers_count].context = context;
 #endif
-        TIMERS_CRITICAL_ENTER();
+        TIMERS_IRQ_LOCK();
 		// Devuelvo el numero de timer
 		n_timer = timers_count;
 		// Incremento la cantidad de timers creados
 		timers_count++;
-        TIMERS_CRITICAL_EXIT();
+        TIMERS_IRQ_UNLOCK();
 	}
 	return n_timer;
 }
@@ -88,37 +88,37 @@ uint8_t give_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS)
  * -----------------------------------------------------*/
 void on_timer(uint8_t id, uint8_t rep)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_COUNTERS_IRQ_LOCK();
 	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
 	flags_set(&timers[id].flags, FLAG_ENABLED);
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_COUNTERS_IRQ_LOCK();
 }
 
 void pause_timer(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_IRQ_LOCK();
 	flags_clear(&timers[id].flags, FLAG_ENABLED);
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_IRQ_UNLOCK();
 }
 
 void continue_timer(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_IRQ_LOCK();
     flags_set(&timers[id].flags, FLAG_ENABLED);
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_IRQ_UNLOCK();
 }
 
 void reload_timer(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_COUNTERS_IRQ_LOCK();
 	timers[id].ticks = timers[id].reload;
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_COUNTERS_IRQ_LOCK();
 }
 
 void set_timer_priority(uint8_t id, uint8_t priority)
 {   
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_IRQ_LOCK();
     // SETEO PRIORIDAD
     if (priority < N_TIMER_PRIORITIES) {
         flags_set_priority(&timers[id].flags, priority);
@@ -136,7 +136,7 @@ void set_timer_priority(uint8_t id, uint8_t priority)
         // clamp contra overflow
         else flags_set_priority(&timers[id].flags, (N_TIMER_PRIORITIES-1));
     }
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_IRQ_UNLOCK();
 }
 
 void set_timer_repeats(uint8_t id, uint8_t rep)
@@ -155,32 +155,39 @@ void add_timer_repeats(uint8_t id, uint8_t rep)
 
 void set_timer_prescaler(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_IRQ_LOCK();
     flags_set(&timers[id].flags, FLAG_PRESCALER);
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_IRQ_UNLOCK();
 }
 
 void clear_timer_prescaler(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_IRQ_LOCK();
     flags_clear(&timers[id].flags, FLAG_PRESCALER);
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_IRQ_UNLOCK();
 }
 
 void resize_timer(uint8_t id, counter_t ticks)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_COUNTERS_IRQ_LOCK();
 	timers[id].reload = ticks;
 	timers[id].ticks = ticks;
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_COUNTERS_IRQ_LOCK();
 }
 
 void off_timer(uint8_t id)
 {
-    TIMERS_CRITICAL_ENTER();
+    TIMERS_COUNTERS_IRQ_LOCK();
 	flags_clear(&timers[id].flags, FLAG_ENABLED);
 	timers[id].ticks = timers[id].reload;
-    TIMERS_CRITICAL_EXIT();
+    TIMERS_COUNTERS_IRQ_LOCK();
+}
+
+void timers_safe_call(uint8_t id)
+{
+    pause_timer(id);
+    TIMER_INVOKE_CALLBACK(&timers[id]);
+    continue_timer(id);
 }
 
 timer_t get_timer_status(uint8_t id)

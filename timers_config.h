@@ -11,7 +11,7 @@
 
 /* ===== ARQUITECTURA ===== */
 #include "portable/timers_arch_list.h"
-#define TIMERS_ARCH             TIMERS_ARCH_CORTEX_M0P
+#define TIMERS_ARCH             TIMERS_ARCH_ARM_CM0P
 
 /* ===== HEADERS ===== */
 #define TIMERS_DEVICE_HEADER    "LPC845.h"
@@ -67,7 +67,7 @@
 #define TIMERS_QUEUE_MASK       (TIMERS_QUEUE_SIZE - 1)
 
 // Cantidad de niveles de prioridad
-#define N_TIMER_PRIORITIES      (3)
+#define N_TIMER_PRIORITIES      (3)       
 
 // Habilitacion de callbacks en ISR
 #define USE_TIMER_CRITICAL      (0)
@@ -77,6 +77,15 @@
 
 // Campos reload/ticks de 16/32 bits
 #define USE_16BIT_COUNTERS      (1)
+
+/* ----------------------------------------------- */
+// EN DESARROLLO
+
+// Nivel de deshabilitacion de IRQ
+// En secciones criticas
+// 0 = FALSE, SOLO IRQ DE TIMER
+// 1 = TRUE, DISABLE/ENABLE ALL IRQ en secciones criticas
+#define TIMER_IRQ_ONLY_LOCK     (0)
 /* ----------------------------------------------- */
 
 #ifndef USE_TIMER_CRITICAL

@@ -1,11 +1,12 @@
 /**
- * coldfire_v2.h
+ * pic32.h
  *
- *  Created on: 26 apr. 2026
+ *  Created on: 6 may. 2026
  *      Author: Ignacio Mehle
  */
-#ifndef TIMERS_PORTABLE_COLDFIRE_V2_H_
-#define TIMERS_PORTABLE_COLDFIRE_V2_H_
+
+#ifndef TIMERS_PORTABLE_PIC32_H_
+#define TIMERS_PORTABLE_PIC32_H_
 
 #include "../timers_config.h"
 
@@ -20,8 +21,8 @@
 #define TIMERS_ENABLE_TIMER_IRQ() 
 
 /* ===== GENERAL IRQ ===== */
-#define TIMERS_DISABLE_ALL_IRQ()    __asm__ volatile ("move.w #0x2700, %sr")
-#define TIMERS_ENABLE_ALL_IRQ()     __asm__ volatile ("move.w #0x2000, %sr")
+#define TIMERS_DISABLE_ALL_IRQ()
+#define TIMERS_ENABLE_ALL_IRQ()    
 
 /* ====== IRQ LOCK ====== */
 #if TIMER_IRQ_ONLY_LOCK            
@@ -40,4 +41,4 @@
 /* ====== DEFERRED ISR ====== */
 #define TIMERS_USE_DEFERRED_ISR     (0)
 
-#endif /* TIMERS_PORTABLE_COLDFIRE_V2_H_ */
+#endif /* TIMERS_PORTABLE_PIC32_H_ */
