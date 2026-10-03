@@ -25,9 +25,9 @@
 
 /* ===== COUNTERS SIZE ===== */
 #if USE_16BIT_COUNTERS
-typedef uint16_t    counter_t  
+typedef uint16_t 	counter_t;  
 #else
-typedef uint32_t    counter_t
+typedef uint32_t    counter_t;
 #endif
 
 /* ===== TIMER BYTE FLAGS ===== */
@@ -309,10 +309,10 @@ void timers_process(uint8_t priority);
 #endif
 
 #if TIMERS_PROTECT_COUNTERS
-    #define TIMERS_COUNTERS_IRQ_LOCK()   TIMERS_IRQ_LOCK()
-    #define TIMERS_COUNTERS_IRQ_LOCK()   TIMERS_IRQ_UNLOCK()
+    #define TIMERS_COUNTERS_IRQ_LOCK()   	TIMERS_IRQ_LOCK()
+    #define TIMERS_COUNTERS_IRQ_UNLOCK()	TIMERS_IRQ_UNLOCK()
 #else
-    #define TIMERS_COUNTERS_IRQ_LOCK()   // nop
-    #define TIMERS_COUNTERS_IRQ_LOCK()   // nop
+    #define TIMERS_COUNTERS_IRQ_LOCK()   	// nop
+    #define TIMERS_COUNTERS_IRQ_UNLOCK()	// nop
 
 #endif /* TIMERS_H_ */

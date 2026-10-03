@@ -92,7 +92,7 @@ void on_timer(uint8_t id, uint8_t rep)
 	timers[id].ticks = timers[id].reload;
 	if (rep != 0) timers[id].rep = rep;
 	flags_set(&timers[id].flags, FLAG_ENABLED);
-    TIMERS_COUNTERS_IRQ_LOCK();
+    TIMERS_COUNTERS_IRQ_UNLOCK();
 }
 
 void pause_timer(uint8_t id)
@@ -113,7 +113,7 @@ void reload_timer(uint8_t id)
 {
     TIMERS_COUNTERS_IRQ_LOCK();
 	timers[id].ticks = timers[id].reload;
-    TIMERS_COUNTERS_IRQ_LOCK();
+    TIMERS_COUNTERS_IRQ_UNLOCK();
 }
 
 void set_timer_priority(uint8_t id, uint8_t priority)
@@ -172,7 +172,7 @@ void resize_timer(uint8_t id, counter_t ticks)
     TIMERS_COUNTERS_IRQ_LOCK();
 	timers[id].reload = ticks;
 	timers[id].ticks = ticks;
-    TIMERS_COUNTERS_IRQ_LOCK();
+    TIMERS_COUNTERS_IRQ_UNLOCK();
 }
 
 void off_timer(uint8_t id)
@@ -180,7 +180,7 @@ void off_timer(uint8_t id)
     TIMERS_COUNTERS_IRQ_LOCK();
 	flags_clear(&timers[id].flags, FLAG_ENABLED);
 	timers[id].ticks = timers[id].reload;
-    TIMERS_COUNTERS_IRQ_LOCK();
+    TIMERS_COUNTERS_IRQ_UNLOCK();
 }
 
 void timers_safe_call(uint8_t id)
