@@ -33,14 +33,14 @@ void timers_init(timer_t *my_timers, uint8_t n)
 
 #if USE_QUEUES
     // inicializo timers queues
-    for (uint8_t p = 0; p < N_PRIORITIES; p++) {
+    for (uint8_t p = 0; p < N_TIMER_PRIORITIES; p++) {
         timers_queues[p].head = 0;
         timers_queues[p].tail = 0;
     }
 #endif
 }
 
-uint8_t give_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS)
+uint8_t create_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS)
 {
 	uint8_t n_timer = 0xFF;
     uint8_t flags = 0x00;
