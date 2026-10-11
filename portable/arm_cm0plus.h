@@ -13,22 +13,28 @@
 #include TIMERS_DEVICE_HEADER
 
 /* ====== CORE HEADER ====== */
-// #include TIMERS_CORE_HEADER
+#include TIMERS_CORE_HEADER
 // #include <core_cm0plus.h>
 
 /* ===== TIMER IRQ ===== */
-#define TIMERS_DISABLE_TIMER_IRQ() \
-    uint32_t _systick_state = SysTick->CTRL; \
-    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk
-#define TIMERS_ENABLE_TIMER_IRQ() \
-    SysTick->CTRL = _systick_state
+#define NOP() __asm volatile ("nop")
 
-/* ===== GENERAL IRQ ===== */
-#define TIMERS_DISABLE_ALL_IRQ() \
-    uint32_t _primask = __get_PRIMASK(); \
-    __disable_irq()
-#define TIMERS_ENABLE_ALL_IRQ()    \
-    __set_PRIMASK(_primask)
+#define TIMERS_DISABLE_TIMER_IRQ()	NVIC_EnableIRQ(SysTick_IRQn)
+#define TIMERS_ENABLE_TIMER_IRQ()  	NVIC_DisableIRQ(SysTick_IRQn)
+#define TIMERS_DISABLE_ALL_IRQ()	NOP()
+#define TIMERS_ENABLE_ALL_IRQ()		NOP()
+//#define TIMERS_DISABLE_TIMER_IRQ() \
+//    uint32_t _systick_state = SysTick->CTRL; \
+//    SysTick->CTRL &= ~SysTick_CTRL_TICKINT_Msk
+//#define TIMERS_ENABLE_TIMER_IRQ() \
+//    SysTick->CTRL = _systick_state
+//
+///* ===== GENERAL IRQ ===== */
+//#define TIMERS_DISABLE_ALL_IRQ() \
+//    uint32_t _primask = __get_PRIMASK(); \
+//    __disable_irq()
+//#define TIMERS_ENABLE_ALL_IRQ()    \
+//    __set_PRIMASK(_primask)
 
 /* ====== IRQ LOCK ====== */
 #if TIMER_IRQ_ONLY_LOCK            
