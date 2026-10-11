@@ -4,7 +4,7 @@ Libreria de Software Timers pensada para microcontroladores de bajos y medios re
 
 - timers_init() - recibe el array de timers timer_t y el numero de timers creados
 
-- give_timer() - asigna el callback al soft timer. Devuelve numero de timer asociado al callback
+- create_timer() - asigna el callback al soft timer. Devuelve numero de timer asociado al callback
     Utilizar variables globales o visibles por los callbacks para guardar los numeros de timer
 
 - timers_tick() - Colocar en ISR de timer segun arquitectura
