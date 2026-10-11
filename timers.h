@@ -147,7 +147,7 @@ void timers_init(timer_t *my_timers, uint8_t n);
  *                  pasara al callback. Debe apuntar a memoria estatica o global.
  * @return ID del timer asignado, o 0xFF si no hay mas espacio para asignar
  */
-uint8_t give_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS);
+uint8_t create_timer(counter_t ticks, uint8_t priority, GIVE_TIMER_ARGS);
 
 /* ===== TIMER MANIPULATION ===== */
 
@@ -314,5 +314,6 @@ void timers_process(uint8_t priority);
 #else
     #define TIMERS_COUNTERS_IRQ_LOCK()   	// nop
     #define TIMERS_COUNTERS_IRQ_UNLOCK()	// nop
+#endif
 
 #endif /* TIMERS_H_ */
